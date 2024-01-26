@@ -18,7 +18,7 @@ def computeArc(point1, point2, degPerDot):
 
 
 def arc():
-    points = [(5, 10), (3, 0)]
+    points = [(5, 5), (3, 0)]
     degPerDot = 10
     secPerDot = 0.1
     arcs = []

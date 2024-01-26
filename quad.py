@@ -24,7 +24,7 @@ def quad():
     secPerDot = 0.1
     arcs = []
     for i in range(len(points)):
-        nexti = (i + 1) % len(points)
+        nexti = nexti(i, len(points))
         arcs.extend(computeQuad(points[i], points[nexti], unitPerDot))
 
     _, ax = simulator.plotSetup(min(arcs, key=lambda x: x[0])[0],

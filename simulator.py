@@ -1,19 +1,34 @@
 import matplotlib.pyplot as plt
+import numpy as np
 import quad
 import arc
+import tank
 
 
 def plotSetup(minx, maxx, miny, maxy):
+    padding = max((maxx-minx)//3, (maxy-miny)//3)
     fig, ax = plt.subplots()
-    ax.set(xlim=[minx, maxx], ylim=[miny, maxy])
+    ax.set(xlim=[minx - padding, maxx + padding],
+           ylim=[miny - padding, maxy + padding])
     return fig, ax
 
 
+def nexti(i, length):
+    return (i + 1) % length
+
+
+def pointInArray(point, arrayOfPoints):
+    for pt in arrayOfPoints:
+        if np.isclose(point, pt)[0] and np.isclose(point, pt)[1]:
+            return True
+    return False
+
+
 if __name__ == "__main__":
-    points = [(2, 5), (5, 2), (3, 0), (1, 4)]
+    points = [(1, 6), (7, 6), (7, 0), (1, 0)]
     unitPerDot = 1
-    degPerDot = 10
-    secPerDot = 0.1
+    degPerDot = 30
+    secPerDot = 0.5
     arcs = []
 
     arcs.extend(quad.computeQuad(points[0], points[1], unitPerDot))
@@ -26,7 +41,11 @@ if __name__ == "__main__":
                       min(arcs, key=lambda x: x[1])[1],
                       max(arcs, key=lambda x: x[1])[1])
 
-    for point in arcs:
-        ax.plot(point[0], point[1], 'ro')
+    turns = tank.computeTurns(arcs, points, 30)
+
+    for i in range(len(turns)):
+        color = plt.cm.viridis(turns[i][2])
+        ax.quiver(turns[i][0], turns[i][1],
+                  turns[i][2], turns[i][3], color=color)
         plt.pause(secPerDot)
     plt.show()
