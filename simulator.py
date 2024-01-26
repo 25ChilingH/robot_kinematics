@@ -24,7 +24,8 @@ def pointInArray(point, arrayOfPoints):
     return False
 
 
-def simulate(points, sequences, unitPerDot, degPerDot, turnDegPerDot, secPerDot):
+def simulate(points, sequences, unitPerDot,
+             degPerDot, turnDegPerDot, secPerDot):
     arcs = []
     for i in range(len(points)):
         ni = nexti(i, len(points))
@@ -46,6 +47,7 @@ def simulate(points, sequences, unitPerDot, degPerDot, turnDegPerDot, secPerDot)
                   arcs[i][2], arcs[i][3], color=color)
         plt.pause(secPerDot)
     plt.show()
+
 
 if __name__ == "__main__":
     points = [(7, 6), (1, 0), (7, 0), (1, 6)]

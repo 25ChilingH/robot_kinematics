@@ -37,5 +37,6 @@ def quad():
         plt.pause(secPerDot)
     plt.show()
 
+
 if __name__ == "__main__":
     quad()
