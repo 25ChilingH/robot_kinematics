@@ -6,8 +6,7 @@ def getPts(ptsTxtFile):
         line = ptsFile.readline().strip('\n')
         if not line:
             break
-        idx = line.find('(')
-        seqs.append(line[:idx])
-        point = line[idx+1:line.find(')')].split(',')
-        points.append((float(point[0]), float(point[1])))
+        action = line.split(" ")
+        points.append((float(action[0]), float(action[1])))
+        seqs.append(action[2])
     return points, seqs
