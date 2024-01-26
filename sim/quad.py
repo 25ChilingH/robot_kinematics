@@ -35,8 +35,7 @@ def quad():
     for point in arcs:
         ax.plot(point[0], point[1], 'ro')
         plt.pause(secPerDot)
-
+    plt.show()
 
 if __name__ == "__main__":
     quad()
-    plt.show()
