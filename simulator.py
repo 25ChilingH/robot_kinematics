@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import quad
-import arc
-import tank
+import sim.quad as quad
+import sim.arc as arc
+import sim.tank as tank
 
 
 def plotSetup(minx, maxx, miny, maxy):
@@ -24,28 +24,35 @@ def pointInArray(point, arrayOfPoints):
     return False
 
 
-if __name__ == "__main__":
-    points = [(1, 6), (7, 6), (7, 0), (1, 0)]
-    unitPerDot = 1
-    degPerDot = 30
-    secPerDot = 0.5
+def simulate(points, sequences, unitPerDot, degPerDot, turnDegPerDot, secPerDot):
     arcs = []
-
-    arcs.extend(quad.computeQuad(points[0], points[1], unitPerDot))
-    arcs.extend(arc.computeArc(points[1], points[2], degPerDot))
-    arcs.extend(quad.computeQuad(points[2], points[3], unitPerDot))
-    arcs.extend(arc.computeArc(points[3], points[0], degPerDot))
+    for i in range(len(points)):
+        ni = nexti(i, len(points))
+        if sequences[i] == "line":
+            arcs.extend(quad.computeQuad(points[i], points[ni], unitPerDot))
+        elif sequences[i] == "arc":
+            arcs.extend(arc.computeArc(points[i], points[ni], degPerDot))
 
     _, ax = plotSetup(min(arcs, key=lambda x: x[0])[0],
                       max(arcs, key=lambda x: x[0])[0],
                       min(arcs, key=lambda x: x[1])[1],
                       max(arcs, key=lambda x: x[1])[1])
 
-    turns = tank.computeTurns(arcs, points, 30)
+    arcs = tank.computeTurns(arcs, points, turnDegPerDot)
 
-    for i in range(len(turns)):
-        color = plt.cm.viridis(turns[i][2])
-        ax.quiver(turns[i][0], turns[i][1],
-                  turns[i][2], turns[i][3], color=color)
+    for i in range(len(arcs)):
+        color = plt.cm.viridis(arcs[i][2])
+        ax.quiver(arcs[i][0], arcs[i][1],
+                  arcs[i][2], arcs[i][3], color=color)
         plt.pause(secPerDot)
     plt.show()
+
+if __name__ == "__main__":
+    points = [(7, 6), (1, 0), (7, 0), (1, 6)]
+    sequences = ["line", "arc", "line", "arc"]
+    unitPerDot = 1
+    degPerDot = 30
+    turnPerDot = 30
+    secPerDot = 0.5
+
+    simulate(points, sequences, unitPerDot, degPerDot, turnPerDot, secPerDot)
