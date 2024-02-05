@@ -1,10 +1,10 @@
 # loop
 stop_car()
-go_ahead(60, 1.35)
+go_ahead(60, 1.4)
 coastAll(0.05)
 arc_left(60, 3.35)
 coastAll(0.1)
-go_ahead(60, 1.35)
+go_ahead(60, 1.25)
 coastAll(0.05)
 arc_left(60, 3.35)
 coastAll(0.05)
