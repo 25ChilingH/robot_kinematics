@@ -311,18 +311,26 @@ def go_back(power, forSecs):
     time.sleep(forSecs)
 
 
-def arc_left(power, forSecs):
+def arc_left(forSecs):
+    power = 31
     RADIUS = 500  # mm
-    HALF_WIDTH = 110  # mm
+    HALF_WIDTH = 105  # mm
     outer = np.pi * (RADIUS + HALF_WIDTH)
     inner = np.pi * (RADIUS - HALF_WIDTH)
-
-    ratio = inner / outer
+    ratio = inner/outer
 
     rr.move(power)
-    rl.move(ratio * power)
+    rl.move(power * ratio)
     fr.move(power)
-    rl.move(ratio * power)
+    fl.move(power * ratio)
+    time.sleep(forSecs)
+
+
+def arc_left(power, forSecs):
+    rr.move(power)
+    rl.move(power * 0.5)
+    fr.move(power)
+    fl.move(power * 0.5)
     time.sleep(forSecs)
 
 
@@ -483,7 +491,7 @@ def main():
     print("starting main, using file list of functions")
 
     if len(sys.argv) == 1:
-        myfile = "instructions.txt"
+        myfile = "square.txt"
     else:
         myfile = sys.argv[1]
     print("reading file ", myfile)
