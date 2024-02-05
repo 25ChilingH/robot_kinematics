@@ -39,16 +39,17 @@ def simulate(points, sequences, unitPerDot, degPerDot, turnDegPerDot):
 def displayWheelSpeed(vec1, vec2, robotWidth, robotLength):
     dx = vec2[0] - vec1[0]
     dy = vec2[1] - vec1[1]
-    print((vec2[0], vec2[1]), dx, dy)
     a = robotWidth / 2
     b = robotLength / 2
     omega = 0
     if np.isclose(dx, 0) and np.isclose(dy, 0):
-        omega = vec2[2] - vec1[2]
-    fr = dy - dx + omega * (a + b)
-    fl = dy + dx - omega * (a + b)
-    rl = dy - dx - omega * (a + b)
-    rr = dy + dx + omega * (a + b)
+        theta1 = np.arctan2(vec1[3], vec1[2])
+        theta2 = np.arctan2(vec2[3], vec2[2])
+        omega = theta2 - theta1
+    fr = round(dy - dx + omega * (a + b), 3)
+    fl = round(dy + dx - omega * (a + b), 3)
+    rl = round(dy - dx - omega * (a + b), 3)
+    rr = round(dy + dx + omega * (a + b), 3)
     return f"FR: {fr}\nFL: {fl}\nRR: {rr}\nRL: {rl}"
 
 
@@ -94,7 +95,7 @@ if __name__ == "__main__":
                 pltPoints[i],
                 pltPoints[nexti(i, len(pltPoints))],
                 robotWidth,
-                robotLength
+                robotLength,
             )
         )
         plt.pause(secPerDot)
