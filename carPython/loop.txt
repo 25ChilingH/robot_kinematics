@@ -1,0 +1,12 @@
+# loop
+stop_car()
+go_ahead(60, 1.5)
+coastAll(0.1)
+arc_left(30, 3.5)
+coastAll(0.1)
+go_ahead(60, 1.5)
+coastAll(0.1)
+arc_left(30, 3.5)
+stop_car()
+# end of instructions
+
