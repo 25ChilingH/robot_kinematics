@@ -5,12 +5,9 @@ from advanced import arc
 from advanced import tank
 
 
-def plotSetup(minx, maxx, miny, maxy):
+def plotSetup(ax, minx, maxx, miny, maxy):
     padding = max((maxx - minx) // 3, (maxy - miny) // 3)
-    fig, ax = plt.subplots()
     ax.set(xlim=[minx - padding, maxx + padding], ylim=[miny - padding, maxy + padding])
-    return fig, ax
-
 
 def nexti(i, length):
     return (i + 1) % length
@@ -36,7 +33,7 @@ def simulate(points, sequences, unitPerDot, degPerDot, turnDegPerDot):
     return pltPoints
 
 
-def displayWheelSpeed(vec1, vec2, robotWidth, robotLength):
+def computeWheelSpeed(vec1, vec2, robotWidth, robotLength):
     dx = vec2[0] - vec1[0]
     dy = vec2[1] - vec1[1]
     a = robotWidth / 2
@@ -50,7 +47,7 @@ def displayWheelSpeed(vec1, vec2, robotWidth, robotLength):
     fl = round(dy + dx - omega * (a + b), 3)
     rl = round(dy - dx - omega * (a + b), 3)
     rr = round(dy + dx + omega * (a + b), 3)
-    return f"FR: {fr}\nFL: {fl}\nRR: {rr}\nRL: {rl}"
+    return fl, fr, rl, rr
 
 
 if __name__ == "__main__":
@@ -65,7 +62,9 @@ if __name__ == "__main__":
     text_position = (0.95, 0.95)
 
     pltPoints = simulate(points, sequences, unitPerDot, degPerDot, turnPerDot)
-    _, ax = plotSetup(
+    fig, ax = plt.subplots()
+    plotSetup(
+        ax,
         min(pltPoints, key=lambda x: x[0])[0],
         max(pltPoints, key=lambda x: x[0])[0],
         min(pltPoints, key=lambda x: x[1])[1],
@@ -90,13 +89,9 @@ if __name__ == "__main__":
             pltPoints[i][3],
             color=color,
         )
-        text_annotation.set_text(
-            displayWheelSpeed(
-                pltPoints[i],
-                pltPoints[nexti(i, len(pltPoints))],
-                robotWidth,
-                robotLength,
-            )
+        text_content = "FL: %.3f\nFR: %.3f\nRL: %.3f\nRR: %.3f" % computeWheelSpeed(
+            pltPoints[i], pltPoints[nexti(i, len(pltPoints))], robotWidth, robotLength
         )
+        text_annotation.set_text(text_content)
         plt.pause(secPerDot)
     plt.show()
