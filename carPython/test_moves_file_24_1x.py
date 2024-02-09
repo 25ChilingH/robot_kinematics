@@ -1,6 +1,6 @@
 import time  # used to set delay time to control moving distance
 import sys  # used for command line options
-import numpy as np
+from follow_sim import getWheelSpeedsAndDelay
 import busio
 from adafruit_pca9685 import PCA9685
 
@@ -311,18 +311,13 @@ def go_back(power, forSecs):
     time.sleep(forSecs)
 
 
-def arc_left(forSecs):
-    power = 31
-    RADIUS = 500  # mm
-    HALF_WIDTH = 105  # mm
-    outer = np.pi * (RADIUS + HALF_WIDTH)
-    inner = np.pi * (RADIUS - HALF_WIDTH)
-    ratio = inner/outer
-
-    rr.move(power)
-    rl.move(power * ratio)
-    fr.move(power)
-    fl.move(power * ratio)
+def followSim():
+    speeds, forSecs = getWheelSpeedsAndDelay()
+    print(speeds)
+    fl.move(speeds[0])
+    fr.move(speeds[1])
+    rl.move(speeds[2])
+    rr.move(speeds[3])
     time.sleep(forSecs)
 
 

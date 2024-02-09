@@ -5,6 +5,7 @@ import configparser
 DEFAULT_CONFIG_FILE = "./sim/config/robot_map.cfg"
 KEYS = ["UNIT_LINE_SPACING", "DEG_ARC_SPACING",
         "DEG_TURN_SPACING", "SEC_CONTROL_LOOP",
+        "ROBOT_WIDTH", "ROBOT_LENGTH",
         "POINTS_FILE"]
 
 config = configparser.ConfigParser()
@@ -14,8 +15,11 @@ unitPerDot = float(config.get('FLOAT', KEYS[0]))
 degPerDot = float(config.get('FLOAT', KEYS[1]))
 turnDegPerDot = float(config.get('FLOAT', KEYS[2]))
 delay = float(config.get('FLOAT', KEYS[3]))
-ptsFile = config.get('STRING', KEYS[4])
+robotWidth = float(config.get('FLOAT', KEYS[4]))
+robotLength = float(config.get('FLOAT', KEYS[5]))
+ptsFile = config.get('STRING', KEYS[6])
 points, sequences = parseConfig.getPts(ptsFile)
 
-simulate(points, sequences, unitPerDot,
-         degPerDot, turnDegPerDot, delay)
+
+pltPoints = simulate(points, sequences, unitPerDot, 
+                     degPerDot, turnDegPerDot)

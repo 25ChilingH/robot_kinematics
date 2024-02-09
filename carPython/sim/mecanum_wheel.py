@@ -14,7 +14,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import interactive
-import simulator
+import utils
 import main
 
 
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         figsize=(8, 4),
         layout="constrained",
     )
-    simulator.plotSetup(
+    utils.plotSetup(
         axd["left"],
         min(main.pltPoints, key=lambda x: x[0])[0],
         max(main.pltPoints, key=lambda x: x[0])[0],
@@ -75,8 +75,8 @@ if __name__ == "__main__":
 
     interactive(True)
 
-    maxSpeed = 1
-    
+    maxSpeed = main.unitPerDot / main.delay
+
     for i in range(len(main.pltPoints)):
         color = plt.cm.viridis(main.pltPoints[i][2])
         axd["left"].quiver(
@@ -86,9 +86,10 @@ if __name__ == "__main__":
             main.pltPoints[i][3],
             color=color,
         )
-        wheelSpeeds = simulator.computeWheelSpeed(
+        wheelSpeeds = utils.computeTankWheelSpeed(
             main.pltPoints[i],
-            main.pltPoints[simulator.nexti(i, len(main.pltPoints))],
+            main.pltPoints[utils.nexti(i, len(main.pltPoints))],
+            main.delay,
             main.robotWidth,
             main.robotLength,
         )

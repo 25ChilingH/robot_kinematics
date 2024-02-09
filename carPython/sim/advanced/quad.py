@@ -2,16 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
+
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from simulator import plotSetup
-from simulator import nexti
+from utils import plotSetup
+from utils import nexti
+
 
 def computeQuad(point1, point2, unitPerDot):
     arcs = []
     angle = np.arctan2(point2[1] - point1[1], point2[0] - point1[0])
-    dist = np.sqrt((point2[0] - point1[0]) ** 2 +
-                   (point2[1] - point1[1]) ** 2)
+    dist = np.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
 
     x = point1[0]
     y = point1[1]
@@ -31,7 +32,6 @@ def quad():
         nextIdx = nexti(i, len(points))
         arcs.extend(computeQuad(points[i], points[nextIdx], unitPerDot))
 
-
     fig, ax = plt.subplots()
     plotSetup(
         ax,
@@ -42,7 +42,7 @@ def quad():
     )
 
     for point in arcs:
-        ax.plot(point[0], point[1], 'ro')
+        ax.plot(point[0], point[1], "ro")
         plt.pause(secPerDot)
     plt.show()
 

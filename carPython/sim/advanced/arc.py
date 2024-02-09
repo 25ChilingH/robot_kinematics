@@ -2,15 +2,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import os
+
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-from simulator import plotSetup
+from utils import distance
+from utils import plotSetup
 
 
 def computeArc(point1, point2, degPerDot):
     arcs = []
     center = ((point1[0] + point2[0]) / 2, (point1[1] + point2[1]) / 2)
-    r = np.sqrt((center[0] - point1[0]) ** 2 + (center[1] - point1[1]) ** 2)
+    r = distance(point1, center)
     offset = np.arctan2(point1[1] - center[1], point1[0] - center[0])
 
     for alpha in np.arange(0, np.pi, np.deg2rad(degPerDot)):
@@ -37,7 +39,7 @@ def arc():
         min(arcs, key=lambda x: x[1])[1],
         max(arcs, key=lambda x: x[1])[1],
     )
-    
+
     for point in arcs:
         ax.plot(point[0], point[1], "ro")
         plt.pause(secPerDot)
