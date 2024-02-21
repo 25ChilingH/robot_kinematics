@@ -1,27 +1,12 @@
 import matplotlib.pyplot as plt
-import numpy as np
 import sys
 import os
 
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+parent_dir = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+)
 sys.path.append(parent_dir)
-from utils import plotSetup
-from utils import nexti
-
-
-def computeQuad(point1, point2, unitPerDot):
-    arcs = []
-    angle = np.arctan2(point2[1] - point1[1], point2[0] - point1[0])
-    dist = np.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
-
-    x = point1[0]
-    y = point1[1]
-    for i in np.arange(0, dist, unitPerDot):
-        arcs.append([x, y])
-        x += np.cos(angle) * unitPerDot
-        y += np.sin(angle) * unitPerDot
-    return arcs
-
+import utils
 
 def quad():
     points = [(2, 5), (5, 2), (3, 0), (1, 4)]
@@ -29,11 +14,11 @@ def quad():
     secPerDot = 0.1
     arcs = []
     for i in range(len(points)):
-        nextIdx = nexti(i, len(points))
-        arcs.extend(computeQuad(points[i], points[nextIdx], unitPerDot))
+        nextIdx = utils.nexti(i, len(points))
+        arcs.extend(utils.computeQuad(points[i], points[nextIdx], unitPerDot))
 
     fig, ax = plt.subplots()
-    plotSetup(
+    utils.plotSetup(
         ax,
         min(arcs, key=lambda x: x[0])[0],
         max(arcs, key=lambda x: x[0])[0],

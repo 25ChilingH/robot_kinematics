@@ -1,22 +1,15 @@
-"""
-by-wheel speed display utility for car movement
-
-Revision History:
-Version: date: changes:
-         Feb 9  converted to function
-"""
-
-__version__ = "0.2"
-__date__ = "Feb 9, 2023"
-__author__ = "Martin Baynes"
-
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import interactive
-import utils
-import main
+import os
+import sys
 
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+import utils
+from Robot import Robot
+robot = Robot()
 
 # equivalent of Arduino map()
 def valmap(value, istart, istop, ostart, ostop):
@@ -64,10 +57,10 @@ if __name__ == "__main__":
     )
     utils.plotSetup(
         axd["left"],
-        min(main.pltPoints, key=lambda x: x[0])[0],
-        max(main.pltPoints, key=lambda x: x[0])[0],
-        min(main.pltPoints, key=lambda x: x[1])[1],
-        max(main.pltPoints, key=lambda x: x[1])[1],
+        min(robot.pltPoints, key=lambda x: x[0])[0],
+        max(robot.pltPoints, key=lambda x: x[0])[0],
+        min(robot.pltPoints, key=lambda x: x[1])[1],
+        max(robot.pltPoints, key=lambda x: x[1])[1],
     )
     fig.suptitle("Simulator with wheel speed display")
     plt.style.use("_mpl-gallery-nogrid")
@@ -75,26 +68,41 @@ if __name__ == "__main__":
 
     interactive(True)
 
-    maxSpeed = main.unitPerDot / main.delay
+    maxSpeed = robot.unitPerDot / robot.delay
 
-    for i in range(len(main.pltPoints)):
-        color = plt.cm.viridis(main.pltPoints[i][2])
-        axd["left"].quiver(
-            main.pltPoints[i][0],
-            main.pltPoints[i][1],
-            main.pltPoints[i][2],
-            main.pltPoints[i][3],
-            color=color,
-        )
-        wheelSpeeds = utils.computeTankWheelSpeed(
-            main.pltPoints[i],
-            main.pltPoints[utils.nexti(i, len(main.pltPoints))],
-            main.delay,
-            main.robotWidth,
-            main.robotLength,
-        )
+    for i in range(len(robot.pltPoints)):
+        color = plt.cm.viridis(robot.pltPoints[i][2])
+        if robot.drive == "tank":
+            axd["left"].quiver(
+                robot.pltPoints[i][0],
+                robot.pltPoints[i][1],
+                robot.pltPoints[i][2],
+                robot.pltPoints[i][3],
+                color = color
+            )
+            wheelSpeeds = utils.computeTankWheelSpeed(
+                robot.pltPoints[i],
+                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+                robot.delay,
+                robot.robotWidth,
+                robot.robotLength,
+            )
+        elif robot.drive == "mecanum":
+            axd["left"].quiver(
+                robot.pltPoints[i][0],
+                robot.pltPoints[i][1],
+                0,
+                1
+            )
+            wheelSpeeds = utils.computeWheelSpeed(
+                robot.pltPoints[i],
+                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+                robot.delay,
+                robot.robotWidth,
+                robot.robotLength,
+            )
         plot_wheels(axd, wheelName, wheelSpeeds, maxSpeed)
-        plt.pause(main.delay)
+        plt.pause(robot.delay)
 
     plt.show()
     bye = input("press enter key to end: ")

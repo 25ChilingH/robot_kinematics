@@ -1,0 +1,3 @@
+# simulated loop
+follow_shape(60.0)
+# end of instructions

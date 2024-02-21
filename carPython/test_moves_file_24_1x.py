@@ -1,8 +1,10 @@
 import time  # used to set delay time to control moving distance
 import sys  # used for command line options
-from follow_sim import getWheelSpeedsAndDelay
 import busio
 from adafruit_pca9685 import PCA9685
+import utils
+from Robot import Robot
+robot = Robot()
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
@@ -311,14 +313,21 @@ def go_back(power, forSecs):
     time.sleep(forSecs)
 
 
-def followSim():
-    speeds, forSecs = getWheelSpeedsAndDelay()
-    print(speeds)
-    fl.move(speeds[0])
-    fr.move(speeds[1])
-    rl.move(speeds[2])
-    rr.move(speeds[3])
-    time.sleep(forSecs)
+def follow_shape(scale):
+    for i in range(len(robot.pltPoints)):
+        wheelSpeeds = utils.computeWheelSpeed(
+            robot.pltPoints[i],
+            robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+            robot.delay,
+            robot.robotWidth,
+            robot.robotLength,
+        )
+        print(wheelSpeeds * scale)
+        fl.move(wheelSpeeds[0] * scale)
+        fr.move(wheelSpeeds[1] * scale)
+        rl.move(wheelSpeeds[2] * scale)
+        rr.move(wheelSpeeds[3] * scale)
+        time.sleep(robot.delay)
 
 
 def arc_left(power, forSecs):
@@ -482,7 +491,7 @@ def destroy():
     GPIO.cleanup()
 
 
-def main():
+def Robot():
     print("starting main, using file list of functions")
 
     if len(sys.argv) == 1:
@@ -511,7 +520,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        Robot()
     except KeyboardInterrupt:
         # press ctrl-C
         stop_car()  # stop movement
