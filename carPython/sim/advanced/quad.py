@@ -8,6 +8,7 @@ parent_dir = os.path.dirname(
 sys.path.append(parent_dir)
 import utils
 
+
 def quad():
     points = [(2, 5), (5, 2), (3, 0), (1, 4)]
     unitPerDot = 1

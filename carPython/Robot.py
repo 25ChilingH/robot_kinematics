@@ -2,6 +2,7 @@ import configparser
 from utils import computePltPoints
 from sim.config import parseConfig
 
+
 class Robot:
     DEFAULT_CONFIG_FILE = "./sim/config/robot_map.cfg"
     KEYS = [
@@ -12,7 +13,7 @@ class Robot:
         "ROBOT_WIDTH",
         "ROBOT_LENGTH",
         "POINTS_FILE",
-        "DRIVE"
+        "DRIVE",
     ]
 
     config = configparser.ConfigParser()
@@ -28,4 +29,6 @@ class Robot:
     drive = config.get("STRING", KEYS[7])
     points, sequences = parseConfig.getPts(ptsFile)
 
-    pltPoints = computePltPoints(points, sequences, unitPerDot, degPerDot, turnDegPerDot)
+    pltPoints = computePltPoints(
+        points, sequences, unitPerDot, degPerDot, turnDegPerDot
+    )

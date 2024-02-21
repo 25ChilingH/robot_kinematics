@@ -4,11 +4,11 @@ import busio
 from adafruit_pca9685 import PCA9685
 import utils
 from Robot import Robot
-robot = Robot()
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
 
+robot = Robot()
 # set up PC9685 osoyoo/AdaFruit
 # from board import SCL,SDA
 SCL = 3

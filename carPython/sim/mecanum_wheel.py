@@ -9,7 +9,9 @@ parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
 import utils
 from Robot import Robot
+
 robot = Robot()
+
 
 # equivalent of Arduino map()
 def valmap(value, istart, istop, ostart, ostop):
@@ -78,7 +80,7 @@ if __name__ == "__main__":
                 robot.pltPoints[i][1],
                 robot.pltPoints[i][2],
                 robot.pltPoints[i][3],
-                color = color
+                color=color,
             )
             wheelSpeeds = utils.computeTankWheelSpeed(
                 robot.pltPoints[i],
@@ -88,12 +90,7 @@ if __name__ == "__main__":
                 robot.robotLength,
             )
         elif robot.drive == "mecanum":
-            axd["left"].quiver(
-                robot.pltPoints[i][0],
-                robot.pltPoints[i][1],
-                0,
-                1
-            )
+            axd["left"].quiver(robot.pltPoints[i][0], robot.pltPoints[i][1], 0, 1)
             wheelSpeeds = utils.computeWheelSpeed(
                 robot.pltPoints[i],
                 robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
