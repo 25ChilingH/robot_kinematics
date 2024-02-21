@@ -1,4 +1,0 @@
-0 30 line
-0 0 arc
-15 0 line
-15 30 arc

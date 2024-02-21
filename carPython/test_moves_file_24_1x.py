@@ -315,13 +315,22 @@ def go_back(power, forSecs):
 
 def follow_shape(scale):
     for i in range(len(robot.pltPoints)):
-        wheelSpeeds = utils.computeWheelSpeed(
-            robot.pltPoints[i],
-            robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
-            robot.delay,
-            robot.robotWidth,
-            robot.robotLength,
-        )
+        if robot.drive == "tank":
+            wheelSpeeds = utils.computeTankWheelSpeed(
+                robot.pltPoints[i],
+                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+                robot.delay,
+                robot.robotWidth,
+                robot.robotLength,
+            )
+        elif robot.drive == "mecanum":
+            wheelSpeeds = utils.computeWheelSpeed(
+                robot.pltPoints[i],
+                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+                robot.delay,
+                robot.robotWidth,
+                robot.robotLength,
+            )
         print(wheelSpeeds * scale)
         fl.move(wheelSpeeds[0] * scale)
         fr.move(wheelSpeeds[1] * scale)
