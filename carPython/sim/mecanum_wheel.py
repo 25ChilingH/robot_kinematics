@@ -46,6 +46,13 @@ def plot_wheels(axd, wheelName, wheelSpeed, maxSpeed, radius=1):
                 wheelSpeed[idx - 1], (0.8, 0.5), xycoords="axes fraction", va="center"
             )
 
+            axd[k].annotate(
+                utils.getWheelPower(wheelSpeed[idx - 1], idx - 1),
+                (0.5, 0.8),
+                xycoords="axes fraction",
+                va="center",
+            )
+
 
 if __name__ == "__main__":
 
