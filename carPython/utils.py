@@ -17,6 +17,10 @@ def pointInArray(point, arrayOfPoints):
     return False
 
 
+def allZeroArray(arr):
+    return np.any(np.absolute(arr) < 10e-3)
+
+
 def computePltPoints(points, sequences, unitPerDot, degPerDot, turnDegPerDot):
     pltPoints = []
     for i in range(len(points)):
@@ -140,10 +144,10 @@ def getWheelPower(desiredMPS, index):
     # 60%: fr 156.7, fl 118.3, rr 154.9, rl 142.2
     # 80%: fr 173.3, fl 175.8, rr 161.6, rl 177.7
     # 100%: fr 193.1, fl 195.3, rr 192.3, rl 196.5
-    fl = [118.3, 175.8, 195.3]
-    fr = [156.7, 173.3, 193.1]
-    rl = [142.2, 177.7, 196.5]
-    rr = [154.9, 161.6, 192.3]
+    fl = [-194.5, -170.2, -124.6, 0, 118.3, 175.8, 195.3]
+    fr = [-195.1, -172.8, -148.7, 0, 156.7, 173.3, 193.1]
+    rl = [-194.9, -173.2, -140.1, 0, 142.2, 177.7, 196.5]
+    rr = [-193.9, -162.5, -156.4, 0, 154.9, 161.6, 192.3]
     multiplier = (0.07 * np.pi) / 60
     mps_known = [
         [x * multiplier for x in fl],
@@ -152,6 +156,6 @@ def getWheelPower(desiredMPS, index):
         [x * multiplier for x in rr],
     ]
 
-    pwm_known = [60, 80, 100]
+    pwm_known = [-100, -60, -80, 0, 60, 80, 100]
 
     return round(np.interp(desiredMPS, mps_known[index], pwm_known), 2)

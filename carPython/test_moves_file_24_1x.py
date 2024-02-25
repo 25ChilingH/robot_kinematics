@@ -4,6 +4,7 @@ import busio
 from adafruit_pca9685 import PCA9685
 import utils
 from Robot import Robot
+from simple_pid import PID
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
@@ -313,7 +314,7 @@ def go_back(power, forSecs):
     time.sleep(forSecs)
 
 
-def follow_shape(scale):
+def follow_shape(p, i , d):
     for i in range(len(robot.pltPoints)):
         if robot.drive == "tank":
             wheelSpeeds = utils.computeTankWheelSpeed(
@@ -331,11 +332,21 @@ def follow_shape(scale):
                 robot.robotWidth,
                 robot.robotLength,
             )
-        print(wheelSpeeds * scale)
-        fl.move(wheelSpeeds[0] * scale)
-        fr.move(wheelSpeeds[1] * scale)
-        rl.move(wheelSpeeds[2] * scale)
-        rr.move(wheelSpeeds[3] * scale)
+        if utils.allZeroArray(wheelSpeeds):
+            print("ALL ZERO")
+            stop_car()
+        else:
+            pidFL = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[0], 0))
+            fl.move(pidFL(sfl.readSpeed()))
+
+            pidFR = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[1], 1))
+            fr.move(pidFR(sfr.readSpeed()))
+
+            pidRL = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[2], 2))
+            rl.move(pidRL(srl.readSpeed()))
+
+            pidRR = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[3], 3))
+            rr.move(pidRR(srr.readSpeed()))
         time.sleep(robot.delay)
 
 
