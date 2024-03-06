@@ -4,7 +4,6 @@ import busio
 from adafruit_pca9685 import PCA9685
 import utils
 from Robot import Robot
-from simple_pid import PID
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
@@ -57,7 +56,7 @@ S2RR = 11  # pin 23
 
 S1RL = 5  # pin 29
 S2RL = 6  # pin 31
-perRev = 155  # estimate A type motors
+perRev = 749  # estimate A type motors
 
 # PCA9685
 PWMOEN = 4  # pin 7 # PCA9685 OEn pin
@@ -114,6 +113,7 @@ class Wheel:
         self.en = pca.channels[enCh]  # EN  wheel 'speed', actually sets power
         self.in1 = pca.channels[in1Ch]  # IN1, IN3 wheel direction control 1
         self.in2 = pca.channels[in2Ch]  # IN2, IN4 wheel direction control 2
+        self.pidController = utils.initPIDController()
         # If IN1=True  and IN2=False motor moves forward,
         # If IN1=False and IN2=True  motor moves backward
         # in both other cases motor will stop/brake
@@ -229,15 +229,14 @@ class Encoder:
         # print(self.name +" position: " + str(self.counter) + " @: " + str(self.time) + \
         #   " speed rev/sec: " + str(self.speed*1E9/perRev) ) #for diagnostic
         # print counts revs /second
-        return self.speed
+        return self.speed * 1e9 / perRev * utils.rotsToMeters()
 
     def resetSpeed(self):
         self.speed = 0
         self.counter = 0
         self.lastCounter = 0
         # may need initialize since stop so 1st speed valid
-        self.time = 0
-        self.lastTime = 0
+        self.time = self.lastTime = time.perf_counter_ns()
 
 
 # end of Encoder class
@@ -314,7 +313,11 @@ def go_back(power, forSecs):
     time.sleep(forSecs)
 
 
-def follow_shape(p, i , d):
+def follow_shape():
+    encoders = [sfl, sfr, srl, srr]
+    motors = [fl, fr, rl, rr]
+    pidControllers = [fl.pidController, fr.pidController, rl.pidController, rr.pidController]
+
     for i in range(len(robot.pltPoints)):
         if robot.drive == "tank":
             wheelSpeeds = utils.computeTankWheelSpeed(
@@ -332,21 +335,17 @@ def follow_shape(p, i , d):
                 robot.robotWidth,
                 robot.robotLength,
             )
-        if utils.allZeroArray(wheelSpeeds):
-            print("ALL ZERO")
-            stop_car()
-        else:
-            pidFL = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[0], 0))
-            fl.move(pidFL(sfl.readSpeed()))
-
-            pidFR = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[1], 1))
-            fr.move(pidFR(sfr.readSpeed()))
-
-            pidRL = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[2], 2))
-            rl.move(pidRL(srl.readSpeed()))
-
-            pidRR = PID(p, i, d, setpoint=utils.getWheelPower(wheelSpeeds[3], 3))
-            rr.move(pidRR(srr.readSpeed()))
+        # if utils.allZeroArray(wheelSpeeds):
+        #     print("ALL ZERO")
+        #     coastAll(0.01)
+        # else:
+        for i in range(4):
+            pidControllers[i].setpoint = wheelSpeeds[i]
+            power = utils.getWheelPower(
+                pidControllers[i](encoders[i].readSpeed()), i
+            )
+            print(i, wheelSpeeds[i], power)
+            motors[i].move(power)
         time.sleep(robot.delay)
 
 

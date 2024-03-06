@@ -1,3 +1,4 @@
 # simulated loop
-follow_shape(0.3, 0, 0)
+follow_shape()
+stop_car()
 # end of instructions

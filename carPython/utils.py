@@ -1,4 +1,5 @@
 import numpy as np
+from simple_pid import PID
 
 
 def plotSetup(ax, minx, maxx, miny, maxy):
@@ -18,8 +19,14 @@ def pointInArray(point, arrayOfPoints):
 
 
 def allZeroArray(arr):
-    return np.any(np.absolute(arr) < 10e-3)
+    return np.any(np.absolute(arr) < 1e-1)
 
+def initPIDController():
+    kP = 0.95
+    kI = 0
+    kD = 0
+    pid = PID(kP, kI, kD)
+    return pid
 
 def computePltPoints(points, sequences, unitPerDot, degPerDot, turnDegPerDot):
     pltPoints = []
@@ -140,15 +147,16 @@ def distance(point1, point2):
     return np.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
 
 
+def rotsToMeters():
+    return 0.07 * np.pi
+
+
 def getWheelPower(desiredMPS, index):
-    # 60%: fr 156.7, fl 118.3, rr 154.9, rl 142.2
-    # 80%: fr 173.3, fl 175.8, rr 161.6, rl 177.7
-    # 100%: fr 193.1, fl 195.3, rr 192.3, rl 196.5
-    fl = [-194.5, -170.2, -124.6, 0, 118.3, 175.8, 195.3]
-    fr = [-195.1, -172.8, -148.7, 0, 156.7, 173.3, 193.1]
+    fl = [-194.5, -170.2, -144.6, 0, 145.3, 175.8, 195.3]
+    fr = [-195.1, -172.8, -148.7, 0, 146.7, 173.3, 193.1]
     rl = [-194.9, -173.2, -140.1, 0, 142.2, 177.7, 196.5]
-    rr = [-193.9, -162.5, -156.4, 0, 154.9, 161.6, 192.3]
-    multiplier = (0.07 * np.pi) / 60
+    rr = [-193.9, -172.5, -146.4, 0, 144.9, 171.6, 192.3]
+    multiplier = rotsToMeters() / 60
     mps_known = [
         [x * multiplier for x in fl],
         [x * multiplier for x in fr],
