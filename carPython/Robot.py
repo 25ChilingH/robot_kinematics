@@ -30,5 +30,5 @@ class Robot:
     points, sequences = parseConfig.getPts(ptsFile)
 
     pltPoints = computePltPoints(
-        points, sequences, unitPerDot, degPerDot, turnDegPerDot
+        points, sequences, unitPerDot, degPerDot, drive, turnDegPerDot
     )

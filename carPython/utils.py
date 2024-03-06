@@ -3,8 +3,7 @@ from simple_pid import PID
 
 
 def plotSetup(ax, minx, maxx, miny, maxy):
-    padding = max((maxx - minx) // 3, (maxy - miny) // 3)
-    ax.set(xlim=[minx - padding, maxx + padding], ylim=[miny - padding, maxy + padding])
+    ax.set(xlim=[minx - 1, maxx + 1], ylim=[miny - 1, maxy + 1])
 
 
 def nexti(i, length):
@@ -22,26 +21,26 @@ def allZeroArray(arr):
     return np.any(np.absolute(arr) < 1e-1)
 
 def initPIDController():
-    kP = 0.95
+    kP = 0.7
     kI = 0
-    kD = 0
+    kD = 0.0
     pid = PID(kP, kI, kD)
     return pid
 
-def computePltPoints(points, sequences, unitPerDot, degPerDot, turnDegPerDot):
+def computePltPoints(points, sequences, unitPerDot, degPerDot, drive, turnDegPerDot):
     pltPoints = []
-    for i in range(len(points)):
+    for i in range(len(sequences)):
         ni = nexti(i, len(points))
         if sequences[i] == "line":
             pltPoints.extend(computeQuad(points[i], points[ni], unitPerDot))
         elif sequences[i] == "arc":
             pltPoints.extend(computeArc(points[i], points[ni], degPerDot))
-
-    pltPoints = computeTurns(pltPoints, points, turnDegPerDot)
+    vecs = computeVectors(pltPoints)
+    pltPoints = computeCornerTurns(vecs, points, drive, turnDegPerDot)
     return pltPoints
 
 
-def computeArrow(arcs):
+def computeVectors(arcs):
     angles = []
     for i in range(len(arcs)):
         nextIdx = nexti(i, len(arcs))
@@ -53,10 +52,9 @@ def computeArrow(arcs):
     return angles
 
 
-def computeTurns(plotpoints, points, degPerTurn):
-    angles = computeArrow(plotpoints)
+def computeCornerTurns(angles, points, drive, degPerTurn):
     arcs = []
-    for i in range(len(angles)):
+    for i in range(len(angles) - 1):
         nextIdx = nexti(i, len(angles))
         arcs.append(
             [
@@ -66,20 +64,21 @@ def computeTurns(plotpoints, points, degPerTurn):
                 np.sin(angles[i][1]),
             ]
         )
-        if pointInArray(angles[nextIdx][0], points):
-            if angles[i][1] < angles[nextIdx][1]:
-                step = np.deg2rad(degPerTurn)
-            else:
-                step = -np.deg2rad(degPerTurn)
-            for theta in np.arange(angles[i][1], angles[nextIdx][1], step):
-                arcs.append(
-                    [
-                        angles[nextIdx][0][0],
-                        angles[nextIdx][0][1],
-                        np.cos(theta),
-                        np.sin(theta),
-                    ]
-                )
+        if drive == "tank":
+            if pointInArray(angles[nextIdx][0], points):
+                if angles[i][1] < angles[nextIdx][1]:
+                    step = np.deg2rad(degPerTurn)
+                else:
+                    step = -np.deg2rad(degPerTurn)
+                for theta in np.arange(angles[i][1], angles[nextIdx][1], step):
+                    arcs.append(
+                        [
+                            angles[nextIdx][0][0],
+                            angles[nextIdx][0][1],
+                            np.cos(theta),
+                            np.sin(theta),
+                        ]
+                    )
     return arcs
 
 
@@ -117,10 +116,7 @@ def computeWheelSpeed(vec1, vec2, time, robotWidth, robotLength):
     a = robotWidth / 2
     b = robotLength / 2
     omega = 0
-    if np.isclose(vx, 0) and np.isclose(vy, 0):
-        theta1 = np.arctan2(vec1[3], vec1[2])
-        theta2 = np.arctan2(vec2[3], vec2[2])
-        omega = (theta2 - theta1) / time
+    print("vx", vx, "vy", vy, "pt 1", vec1, "pt 2", vec2)
     fr = round(vy - vx + omega * (a + b), 3)
     fl = round(vy + vx - omega * (a + b), 3)
     rl = round(vy - vx - omega * (a + b), 3)
@@ -154,7 +150,7 @@ def rotsToMeters():
 def getWheelPower(desiredMPS, index):
     fl = [-194.5, -170.2, -144.6, 0, 145.3, 175.8, 195.3]
     fr = [-195.1, -172.8, -148.7, 0, 146.7, 173.3, 193.1]
-    rl = [-194.9, -173.2, -140.1, 0, 142.2, 177.7, 196.5]
+    rl = [-194.9, -173.2, -140.1, 0, 144.2, 177.7, 196.5]
     rr = [-193.9, -172.5, -146.4, 0, 144.9, 171.6, 192.3]
     multiplier = rotsToMeters() / 60
     mps_known = [

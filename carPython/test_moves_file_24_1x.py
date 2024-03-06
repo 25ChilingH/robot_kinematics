@@ -4,6 +4,7 @@ import busio
 from adafruit_pca9685 import PCA9685
 import utils
 from Robot import Robot
+import matplotlib.pyplot as plt
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
@@ -312,41 +313,55 @@ def go_back(power, forSecs):
     fl.move(-power)
     time.sleep(forSecs)
 
+def computeSpeed(i):
+    if robot.drive == "tank":
+        wheelSpeeds = utils.computeTankWheelSpeed(
+            robot.pltPoints[i],
+            robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+            robot.delay,
+            robot.robotWidth,
+            robot.robotLength,
+        )
+    elif robot.drive == "mecanum":
+        wheelSpeeds = utils.computeWheelSpeed(
+            robot.pltPoints[i],
+            robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
+            robot.delay,
+            robot.robotWidth,
+            robot.robotLength,
+        )
+    return wheelSpeeds
+
+
+def plotPID(times, setpoints, measurement):
+    fig, ax = plt.subplots()
+    ax.plot(times, setpoints[0], 'ro')
+    ax.plot(times, measurement[0], 'bo')
+    plt.show()
 
 def follow_shape():
     encoders = [sfl, sfr, srl, srr]
     motors = [fl, fr, rl, rr]
     pidControllers = [fl.pidController, fr.pidController, rl.pidController, rr.pidController]
-
+    setpoints = [[] for x in range(4)]
+    measure = [[] for x in range(4)]
+    times = []
     for i in range(len(robot.pltPoints)):
-        if robot.drive == "tank":
-            wheelSpeeds = utils.computeTankWheelSpeed(
-                robot.pltPoints[i],
-                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
-                robot.delay,
-                robot.robotWidth,
-                robot.robotLength,
-            )
-        elif robot.drive == "mecanum":
-            wheelSpeeds = utils.computeWheelSpeed(
-                robot.pltPoints[i],
-                robot.pltPoints[utils.nexti(i, len(robot.pltPoints))],
-                robot.delay,
-                robot.robotWidth,
-                robot.robotLength,
-            )
-        # if utils.allZeroArray(wheelSpeeds):
-        #     print("ALL ZERO")
-        #     coastAll(0.01)
-        # else:
-        for i in range(4):
-            pidControllers[i].setpoint = wheelSpeeds[i]
+        wheelSpeeds = computeSpeed(i)
+        times.append(i)
+        for wheelIdx in range(4):
+            pidControllers[wheelIdx].setpoint = wheelSpeeds[wheelIdx]
+            speed = encoders[wheelIdx].readSpeed()
             power = utils.getWheelPower(
-                pidControllers[i](encoders[i].readSpeed()), i
+                pidControllers[wheelIdx](speed), wheelIdx
             )
-            print(i, wheelSpeeds[i], power)
-            motors[i].move(power)
+            setpoints[wheelIdx].append(wheelSpeeds[wheelIdx])
+            measure[wheelIdx].append(speed)
+            print(wheelIdx, wheelSpeeds[wheelIdx], speed, power)
+            motors[wheelIdx].move(power)
         time.sleep(robot.delay)
+    stop_car()
+    plotPID(times, setpoints, measure)
 
 
 def arc_left(power, forSecs):

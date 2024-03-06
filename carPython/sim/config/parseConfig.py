@@ -8,5 +8,6 @@ def getPts(ptsTxtFile):
             break
         action = line.split(" ")
         points.append((float(action[0]), float(action[1])))
-        seqs.append(action[2])
+        if len(action) > 2:
+            seqs.append(action[2])
     return points, seqs
