@@ -114,7 +114,7 @@ class Wheel:
         self.en = pca.channels[enCh]  # EN  wheel 'speed', actually sets power
         self.in1 = pca.channels[in1Ch]  # IN1, IN3 wheel direction control 1
         self.in2 = pca.channels[in2Ch]  # IN2, IN4 wheel direction control 2
-        self.pidController = utils.initPIDController()
+        self.pidController = utils.initPIDController(robot.delay)
         # If IN1=True  and IN2=False motor moves forward,
         # If IN1=False and IN2=True  motor moves backward
         # in both other cases motor will stop/brake
@@ -339,7 +339,7 @@ def plotPID(times, setpoints, measurement):
     ax.plot(times, measurement[0], 'bo')
     plt.show()
 
-def follow_shape():
+def follow_shape(scale):
     encoders = [sfl, sfr, srl, srr]
     motors = [fl, fr, rl, rr]
     pidControllers = [fl.pidController, fr.pidController, rl.pidController, rr.pidController]
@@ -350,14 +350,15 @@ def follow_shape():
         wheelSpeeds = computeSpeed(i)
         times.append(i)
         for wheelIdx in range(4):
-            pidControllers[wheelIdx].setpoint = wheelSpeeds[wheelIdx]
+            setpoint = wheelSpeeds[wheelIdx] * scale
+            pidControllers[wheelIdx].setpoint = setpoint
             speed = encoders[wheelIdx].readSpeed()
             power = utils.getWheelPower(
                 pidControllers[wheelIdx](speed), wheelIdx
             )
-            setpoints[wheelIdx].append(wheelSpeeds[wheelIdx])
+            setpoints[wheelIdx].append(setpoint)
             measure[wheelIdx].append(speed)
-            print(wheelIdx, wheelSpeeds[wheelIdx], speed, power)
+            print(wheelIdx, setpoint, speed, power)
             motors[wheelIdx].move(power)
         time.sleep(robot.delay)
     stop_car()

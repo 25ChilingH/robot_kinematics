@@ -20,12 +20,14 @@ def pointInArray(point, arrayOfPoints):
 def allZeroArray(arr):
     return np.any(np.absolute(arr) < 1e-1)
 
-def initPIDController():
-    kP = 0.7
-    kI = 0
-    kD = 0.0
-    pid = PID(kP, kI, kD)
+
+def initPIDController(time):
+    kP = 2.2
+    kI = 2.4
+    kD = 0.01
+    pid = PID(kP, kI, kD, sample_time=time)
     return pid
+
 
 def computePltPoints(points, sequences, unitPerDot, degPerDot, drive, turnDegPerDot):
     pltPoints = []
