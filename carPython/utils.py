@@ -1,5 +1,7 @@
 import numpy as np
+from scipy.interpolate import CubicSpline
 from simple_pid import PID
+from scipy.integrate import quad
 
 
 def plotSetup(ax, minx, maxx, miny, maxy):
@@ -37,8 +39,8 @@ def computePltPoints(points, sequences, unitPerDot, degPerDot, drive, turnDegPer
             pltPoints.extend(computeQuad(points[i], points[ni], unitPerDot))
         elif sequences[i] == "arc":
             pltPoints.extend(computeArc(points[i], points[ni], degPerDot))
-    vecs = computeVectors(pltPoints)
-    pltPoints = computeCornerTurns(vecs, points, drive, turnDegPerDot)
+    angles, _ = computeVectors(pltPoints)
+    pltPoints = computeCornerTurns(angles, points, drive, turnDegPerDot)
     return pltPoints
 
 
@@ -51,7 +53,18 @@ def computeVectors(arcs):
         angles.append(
             [point1, np.arctan2(point2[1] - point1[1], point2[0] - point1[0])]
         )
-    return angles
+    arcs = []
+    for i in range(len(angles) - 1):
+        nextIdx = nexti(i, len(angles))
+        arcs.append(
+            [
+                angles[i][0][0],
+                angles[i][0][1],
+                np.cos(angles[i][1]),
+                np.sin(angles[i][1]),
+            ]
+        )
+    return angles, arcs
 
 
 def computeCornerTurns(angles, points, drive, degPerTurn):
@@ -110,6 +123,54 @@ def computeQuad(point1, point2, unitPerDot):
         x += np.cos(angle) * unitPerDot
         y += np.sin(angle) * unitPerDot
     return arcs
+
+
+def computeArcLength(cs, x_values):
+    def integrand(t):
+        dx_dt = cs.derivative(nu=1)(t)
+        dy_dt = cs.derivative(nu=1)(t)
+        return np.sqrt(dx_dt**2 + dy_dt**2)
+
+    length, _ = quad(integrand, x_values[0], x_values[-1])
+    return length
+
+def computeSplinePoints1(points, unitPerDot):
+    x = []
+    y = []
+    for pt in points:
+        x.append(pt[0])
+        y.append(pt[1])
+    combined = sorted(zip(x, y), key=lambda x: x[0])
+    x = [a[0] for a in combined]
+    y = [a[1] for a in combined]
+    f = CubicSpline(x, y, bc_type="natural")
+    space = round(computeArcLength(f, x) / unitPerDot)
+    x_new = np.linspace(x[0], x[-1], space)
+    y_new = f(x_new)
+    splines = []
+    for i in range(len(x_new)):
+        splines.append((x_new[i], y_new[i]))
+    _, vecs = computeVectors(splines)
+    return vecs
+
+def computeSplinePoints(points, unitPerDot):
+    x = []
+    y = []
+    for pt in points:
+        x.append(pt[0])
+        y.append(pt[1])
+    combined = sorted(zip(x, y), key=lambda x: x[0])
+    x = [a[0] for a in combined]
+    y = [a[1] for a in combined]
+    f = CubicSpline(x, y, bc_type="natural")
+    space = round(computeArcLength(f, x) / unitPerDot)
+    x_new = np.linspace(x[0], x[-1], space)
+    y_new = f(x_new)
+    splines = []
+    for i in range(len(x_new)):
+        splines.append((x_new[i], y_new[i]))
+    _, vecs = computeVectors(splines)
+    return vecs
 
 
 def computeWheelSpeed(vec1, vec2, time, robotWidth, robotLength):

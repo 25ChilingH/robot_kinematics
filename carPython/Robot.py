@@ -1,5 +1,5 @@
 import configparser
-from utils import computePltPoints
+from utils import computePltPoints, computeSplinePoints
 from sim.config import parseConfig
 
 
@@ -13,6 +13,7 @@ class Robot:
         "ROBOT_WIDTH",
         "ROBOT_LENGTH",
         "POINTS_FILE",
+        "SPLINED",
         "DRIVE",
     ]
 
@@ -26,9 +27,13 @@ class Robot:
     robotWidth = float(config.get("FLOAT", KEYS[4]))
     robotLength = float(config.get("FLOAT", KEYS[5]))
     ptsFile = config.get("STRING", KEYS[6])
-    drive = config.get("STRING", KEYS[7])
+    spline = config.get("STRING", KEYS[7])
+    drive = config.get("STRING", KEYS[8])
     points, sequences = parseConfig.getPts(ptsFile)
 
-    pltPoints = computePltPoints(
-        points, sequences, unitPerDot, degPerDot, drive, turnDegPerDot
-    )
+    if spline == "y":
+        pltPoints = computeSplinePoints(points, unitPerDot)
+    else:
+        pltPoints = computePltPoints(
+            points, sequences, unitPerDot, degPerDot, drive, turnDegPerDot
+        )

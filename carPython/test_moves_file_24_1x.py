@@ -528,11 +528,11 @@ def destroy():
 
 def Robot():
     print("starting main, using file list of functions")
-
+    dir = "./instructions/"
     if len(sys.argv) == 1:
-        myfile = "square.txt"
+        myfile = dir + "square.txt"
     else:
-        myfile = sys.argv[1]
+        myfile = dir + sys.argv[1]
     print("reading file ", myfile)
 
     with open(myfile, encoding="utf-8") as myf:

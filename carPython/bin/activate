@@ -38,7 +38,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/Users/chilinghan/Documents/Github/robotics_kinematics/carPython"
+VIRTUAL_ENV="/Users/chilinghan/Documents/Github/robot_kinematics/carPython"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

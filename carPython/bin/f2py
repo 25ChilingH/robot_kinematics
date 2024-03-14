@@ -1,4 +1,4 @@
-#!/Users/chilinghan/Documents/Github/robotics_kinematics/carPython/bin/python3.11
+#!/Users/chilinghan/Documents/Github/robot_kinematics/carPython/bin/python3.11
 # -*- coding: utf-8 -*-
 import re
 import sys

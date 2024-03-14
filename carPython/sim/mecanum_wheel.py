@@ -104,7 +104,7 @@ if __name__ == "__main__":
                 robot.delay,
                 robot.robotWidth,
                 robot.robotLength,
-            )
+            ) 
         plot_wheels(axd, wheelName, wheelSpeeds, maxSpeed)
         plt.pause(robot.delay)
 

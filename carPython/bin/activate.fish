@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/chilinghan/Documents/Github/robotics_kinematics/carPython"
+set -gx VIRTUAL_ENV "/Users/chilinghan/Documents/Github/robot_kinematics/carPython"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH
