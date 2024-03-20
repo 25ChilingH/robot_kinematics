@@ -5,6 +5,7 @@ from adafruit_pca9685 import PCA9685
 import utils
 from Robot import Robot
 import matplotlib.pyplot as plt
+from mpu6050 import mpu6050
 
 # set up Raspberry Pi GPIO
 import RPi.GPIO as GPIO  # control through GPIO pins
@@ -279,6 +280,37 @@ GPIO.add_event_detect(srl.s1, GPIO.BOTH, callback=srl.callback_encoder)
 GPIO.add_event_detect(srr.s1, GPIO.BOTH, callback=srr.callback_encoder)
 
 
+class Gyro:
+    def __init__(self):
+        self.sensor = mpu6050(0x68)
+        self.yawTime = time.perf_counter_ns()
+        self.lastYawTime = self.yawTime
+
+    # in g's
+    def readAccX(self):
+        accel_data = self.sensor.get_accel_data()
+        return accel_data["x"]
+
+    # in g's
+    def readAccY(self):
+        accel_data = self.sensor.get_accel_data()
+        return accel_data["y"]
+
+    # CCW+ deg/s
+    def readYawSpeed(self):
+        gyro_data = self.sensor.get_gyro_data()
+        self.yawTime = time.perf_counter_ns()
+        return gyro_data["z"]
+
+    # def readYaw(self):
+    #     yawSpeed = self.readYawSpeed()
+    #     if self.yawTime != 0 and self.yawTime != self.lastYawTime:
+    #         return yawSpeed * (self.yawTime - self.lastYawTime) / 1e9
+    #     self.lastYawTime = self.yawTime
+
+
+gyro = Gyro()
+
 # Movement control examples
 # rear right motor moving forward was def rr_ahead(speed): ... now rr.move(speed)
 # rear right motor moving back    was def rr_back(speed): ...  now rr.move(-speed)
@@ -313,6 +345,7 @@ def go_back(power, forSecs):
     fl.move(-power)
     time.sleep(forSecs)
 
+
 def computeSpeed(i):
     if robot.drive == "tank":
         wheelSpeeds = utils.computeTankWheelSpeed(
@@ -335,14 +368,20 @@ def computeSpeed(i):
 
 def plotPID(times, setpoints, measurement):
     fig, ax = plt.subplots()
-    ax.plot(times, setpoints[0], 'ro')
-    ax.plot(times, measurement[0], 'bo')
+    ax.plot(times, setpoints[0], "ro")
+    ax.plot(times, measurement[0], "bo")
     plt.show()
+
 
 def follow_shape(scale):
     encoders = [sfl, sfr, srl, srr]
     motors = [fl, fr, rl, rr]
-    pidControllers = [fl.pidController, fr.pidController, rl.pidController, rr.pidController]
+    pidControllers = [
+        fl.pidController,
+        fr.pidController,
+        rl.pidController,
+        rr.pidController,
+    ]
     setpoints = [[] for x in range(4)]
     measure = [[] for x in range(4)]
     times = []
@@ -353,9 +392,7 @@ def follow_shape(scale):
             setpoint = wheelSpeeds[wheelIdx] * scale
             pidControllers[wheelIdx].setpoint = setpoint
             speed = encoders[wheelIdx].readSpeed()
-            power = utils.getWheelPower(
-                pidControllers[wheelIdx](speed), wheelIdx
-            )
+            power = utils.getWheelPower(pidControllers[wheelIdx](speed), wheelIdx)
             setpoints[wheelIdx].append(setpoint)
             measure[wheelIdx].append(speed)
             print(wheelIdx, setpoint, speed, power)
@@ -514,6 +551,25 @@ def test_move():
     print("Stopped and speed reset")
 
 
+def test_gyro():
+    while True:
+        print(
+            "Yaw Speed:",
+            gyro.readYawSpeed(),
+            "AccX:",
+            gyro.readAccX(),
+            "AccY:",
+            gyro.readAccY(),
+        )
+        time.sleep(0.5)
+
+
+# def test_readYaw():
+#     yaw = gyro.readYaw()
+#     time.sleep(0.5)
+#     print("Yaw in degs:", yaw)
+
+
 def test_readPush():
     changed, state = readPush()
     if changed:
@@ -532,7 +588,7 @@ def Robot():
     if len(sys.argv) == 1:
         myfile = dir + "square.txt"
     else:
-        myfile = dir + sys.argv[1]
+        myfile = sys.argv[1]
     print("reading file ", myfile)
 
     with open(myfile, encoding="utf-8") as myf:

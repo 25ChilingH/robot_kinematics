@@ -5,7 +5,7 @@ This repository is written with Python 3.11. It holds the code for the class I t
 To activate the Python virtual environment the program of choice, open the terminal and type
 ```
 cd carPython
-source carPython/bin/activate
+source ./bin/activate
 ```
 
 Then type

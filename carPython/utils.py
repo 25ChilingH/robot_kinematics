@@ -179,7 +179,7 @@ def computeWheelSpeed(vec1, vec2, time, robotWidth, robotLength):
     a = robotWidth / 2
     b = robotLength / 2
     omega = 0
-    print("vx", vx, "vy", vy, "pt 1", vec1, "pt 2", vec2)
+    # print("vx", vx, "vy", vy, "pt 1", vec1, "pt 2", vec2)
     fr = round(vy - vx + omega * (a + b), 3)
     fl = round(vy + vx - omega * (a + b), 3)
     rl = round(vy - vx - omega * (a + b), 3)
