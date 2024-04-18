@@ -283,8 +283,6 @@ GPIO.add_event_detect(srr.s1, GPIO.BOTH, callback=srr.callback_encoder)
 class Gyro:
     def __init__(self):
         self.sensor = mpu6050(0x68)
-        self.yawTime = time.perf_counter_ns()
-        self.lastYawTime = self.yawTime
 
     # in g's
     def readAccX(self):
@@ -299,14 +297,7 @@ class Gyro:
     # CCW+ deg/s
     def readYawSpeed(self):
         gyro_data = self.sensor.get_gyro_data()
-        self.yawTime = time.perf_counter_ns()
         return gyro_data["z"]
-
-    # def readYaw(self):
-    #     yawSpeed = self.readYawSpeed()
-    #     if self.yawTime != 0 and self.yawTime != self.lastYawTime:
-    #         return yawSpeed * (self.yawTime - self.lastYawTime) / 1e9
-    #     self.lastYawTime = self.yawTime
 
 
 gyro = Gyro()
@@ -367,9 +358,18 @@ def computeSpeed(i):
 
 
 def plotPID(times, setpoints, measurement):
-    fig, ax = plt.subplots()
-    ax.plot(times, setpoints[0], "ro")
-    ax.plot(times, measurement[0], "bo")
+    fig, ax = plt.subplots(2, 2)
+    ax[0, 0].plot(times, setpoints[0], "ro")
+    ax[0, 0].plot(times, measurement[0], "bo")
+
+    ax[0, 1].plot(times, setpoints[1], "ro")
+    ax[0, 1].plot(times, measurement[1], "bo")
+
+    ax[1, 0].plot(times, setpoints[2], "ro")
+    ax[1, 0].plot(times, measurement[2], "bo")
+
+    ax[1, 1].plot(times, setpoints[3], "ro")
+    ax[1, 1].plot(times, measurement[3], "bo")
     plt.show()
 
 
@@ -391,12 +391,15 @@ def follow_shape(scale):
         for wheelIdx in range(4):
             setpoint = wheelSpeeds[wheelIdx] * scale
             pidControllers[wheelIdx].setpoint = setpoint
+
             speed = encoders[wheelIdx].readSpeed()
             power = utils.getWheelPower(pidControllers[wheelIdx](speed), wheelIdx)
+            motors[wheelIdx].move(power)
+
             setpoints[wheelIdx].append(setpoint)
             measure[wheelIdx].append(speed)
             print(wheelIdx, setpoint, speed, power)
-            motors[wheelIdx].move(power)
+
         time.sleep(robot.delay)
     stop_car()
     plotPID(times, setpoints, measure)
@@ -564,12 +567,6 @@ def test_gyro():
         time.sleep(0.5)
 
 
-# def test_readYaw():
-#     yaw = gyro.readYaw()
-#     time.sleep(0.5)
-#     print("Yaw in degs:", yaw)
-
-
 def test_readPush():
     changed, state = readPush()
     if changed:
@@ -586,7 +583,7 @@ def Robot():
     print("starting main, using file list of functions")
     dir = "./instructions/"
     if len(sys.argv) == 1:
-        myfile = dir + "square.txt"
+        myfile = dir + "track.txt"
     else:
         myfile = sys.argv[1]
     print("reading file ", myfile)
