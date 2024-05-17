@@ -1,5 +1,7 @@
 # SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
 # SPDX-License-Identifier: MIT
+# Author: Chiling Han & Sania Gupta
+# Both members split the work fairly evenly and then worked together on tuning the results
 
 import time
 
@@ -59,38 +61,43 @@ class Arm:
                 pca.channels[i], min_pulse=512, max_pulse=2560, actuation_range=180
             )
 
+    # Reset the arm to a zero position
     def zero(self):
         # We sleep in the loops to give the servo time to move into position.
-        # s0 -> +L; s1 -> +D; s2 -> +D; s3 -> +R; s4 -> +close
-        zeroPos = [55, 155, 117, 80, 50]
+        # s0 -> +L; s1 -> -D; s2 -> +D; s3 -> +R; s4 -> +close
+        zeroPos = [55, 157, 120, 145, 50]
         for i in range(len(self.armJoint)):
             self.armJoint[i].angle = zeroPos[i]
 
         time.sleep(1.0)
 
+    # Reset the claw to a zero position
     def resetClaw(self):
         self.armJoint[4].angle = 50
         time.sleep(1.0)
 
-        self.armJoint[3].angle = 80
+        self.armJoint[3].angle = 145
         time.sleep(1.0)
 
+    # Close the claw
     def closeClaw(self):
-        self.armJoint[4].angle = 120
+        self.armJoint[4].angle = 110
         time.sleep(1.0)
 
+    # Move the arm backwards so that the claw remains parallel to the floor
     def moveBack(self):
-        threshold = 190
+        threshold = 180
         while self.armJoint[1].angle < threshold:
             try:
-                self.armJoint[3].angle -= 3.0
+                self.armJoint[1].angle += 0.5
             except:
                 break
-            self.armJoint[2].angle += 0.7
-            self.armJoint[1].angle += 0.5
+            self.armJoint[2].angle += 0.8
+            self.armJoint[3].angle -= 2.0
 
             time.sleep(0.03)
 
+    # Rotate the claw to spin the nut
     def spinClaw(self):
         threshold = 10
         while self.armJoint[3].angle > threshold:
@@ -101,24 +108,43 @@ class Arm:
 
             time.sleep(0.03)
 
-
+    # Open the claw to drop the nut
     def dropNut(self):
-        self.armJoint[4].angle = 120
-        time.sleep(1.0)
-        self.armJoint[0].angle = 160
+        self.armJoint[4].angle = 60
         time.sleep(1.0)
 
+    # Move the arm to the nail's position
+    def moveToNail(self):
+        self.armJoint[3].angle = 90
+        time.sleep(1.0)
+        self.armJoint[0].angle = 140
+        time.sleep(1.0)
+        self.armJoint[2].angle = 180
+        time.sleep(1.0)
+
+        threshold = 110
+        while self.armJoint[1].angle > threshold:
+            try:
+                self.armJoint[1].angle -= 1.0
+            except:
+                break
+            time.sleep(0.03)
 
 if __name__ == "__main__":
     arm = Arm()
     arm.zero()
 
-    for i in range(2):
+    NO_TURNS = 9
+    print(NO_TURNS)
+    for i in range(NO_TURNS):
         arm.closeClaw()
         arm.spinClaw()
-        # arm.moveBack()
         arm.resetClaw()
+        print(i, "th iteration")
+    arm.closeClaw()
     arm.moveBack()
+
+    arm.moveToNail()
     arm.dropNut()
 
     pca.deinit()
